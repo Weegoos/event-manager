@@ -8,6 +8,7 @@ export interface EventItem {
   date: string;
   category: EventCategory;
   status: EventStatus;
+  [key: string]: unknown;
 }
 
 export interface EventsStorage {
