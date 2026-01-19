@@ -4,7 +4,7 @@
 
 <div align="center">
 
-![Dashboard Preview](src\docs\dashboard.png)
+![Dashboard Preview](public/docs/dashboard.png)
 
 </div>
 
