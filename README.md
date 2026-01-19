@@ -1,43 +1,55 @@
-# Quasar App (nts)
+# NTS Events Manager
 
-A Quasar Project
+🚀 **Modern Event Management Dashboard** на **Quasar + Vue 3 + TypeScript + Tailwind CSS**. Полностью responsive CRUD с фильтрацией и поиском.
 
-## Install the dependencies
+![Screenshot](docs/screenshot.png)
 
-```bash
+## ✨ Демо & Фичи
+
+| Платформа        | Ссылка                                                       | Особенности                 |
+| ---------------- | ------------------------------------------------------------ | --------------------------- |
+| **Live Demo**    | [Event manager](https://event-manager-quasar.netlify.app/#/) | Полный функционал           |
+| **localStorage** | ✅                                                           | Данные сохраняются локально |
+| **Responsive**   | 📱💻                                                         | Mobile/Tablet/Desktop       |
+
+✅ **CRUD операций**  
+✅ **Фильтры** (Category/Status/Search)  
+✅ **Валидация** форм  
+✅ **Delete Confirm** диалог  
+✅ **Atomic Design** архитектура
+
+## 🏗️ Архитектура (Atomic Design)
+
+```txt
+src/
+├── atoms/          # Button, Input, Select
+├── molecules/      # Table, MoleculeDialog
+├── services/       # eventsStorage.ts (CRUD API)
+├── composables/    # formatDate
+├── models/         # EventItem, EventCategory
+└── boot/           # initEvents
+```
+
+# Клонировать и установить
+
+git clone [repo](https://github.com/Weegoos/event-manager.git)
+cd nts
 yarn
-# or
-npm install
-```
 
-### Start the app in development mode (hot-code reloading, error reporting, etc.)
+# Dev сервер (hot reload)
 
-```bash
 quasar dev
-```
 
-### Lint the files
+# Проверка качества
 
-```bash
 yarn lint
-# or
-npm run lint
-```
-
-### Format the files
-
-```bash
+yarn type-check
 yarn format
-# or
-npm run format
-```
 
-### Build the app for production
+# Production билд
 
-```bash
 quasar build
-```
 
-### Customize the configuration
+# Превью билда
 
-See [Configuring quasar.config.js](https://v2.quasar.dev/quasar-cli-vite/quasar-config-js).
+quasar build --debug info
