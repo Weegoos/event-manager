@@ -21,6 +21,14 @@ export function initEvents(): void {
       category: 'Meeting',
       status: 'Completed',
     },
+    {
+      id: 3,
+      title: 'ZPlan Meeting',
+      description: 'GLM Coding-plan discussion',
+      date: '2025-07-15T10:00:00Z',
+      category: 'Conference',
+      status: 'Planned',
+    },
   ];
 
   initialEvents.forEach(addEvent);
