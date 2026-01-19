@@ -1,43 +1,30 @@
-<template>
-  <q-select
-    outlined
-    dense
-    v-bind="$attrs"
-    v-model="localValue"
-    :options="options"
-    :label="label"
-    :hint="hint"
-  />
-</template>
-
 <script lang="ts" setup>
-import { ref, watch } from 'vue';
+type SelectOption = { label: string; value: string };
 
-interface Props {
-  modelValue: string | number;
-  options: Array<{ label: string; value: string | number }>;
+const props = defineProps<{
+  modelValue: string | null;
+  options: SelectOption[];
   label?: string;
-  hint?: string;
-}
-
-const props = defineProps<Props>();
-
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: string | number): void;
+  clearable?: boolean;
 }>();
 
-const localValue = ref(props.modelValue);
-
-watch(
-  () => props.modelValue,
-  (newVal) => {
-    localValue.value = newVal;
-  },
-);
-
-watch(localValue, (val) => {
-  emit('update:modelValue', val);
-});
+const emit = defineEmits<{
+  (e: 'update:modelValue', value: string | null): void;
+}>();
 </script>
 
-<style scoped></style>
+<template>
+  <q-select
+    :model-value="props.modelValue"
+    :options="props.options"
+    :label="props.label"
+    :clearable="props.clearable"
+    option-label="label"
+    option-value="value"
+    emit-value
+    outlined
+    dense
+    map-options
+    @update:model-value="(val) => emit('update:modelValue', val)"
+  />
+</template>

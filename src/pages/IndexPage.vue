@@ -1,32 +1,74 @@
 <script lang="ts" setup>
-import { deleteEvent, getEvents, updateEvent, addEvent } from 'src/services/eventsStorage';
-import { MoleculeDialog, Table } from 'src/components/molecules';
 import { onMounted, ref, computed } from 'vue';
-import type { EventItem, EventCategory, EventStatus } from 'src/models/event';
-import { initEvents } from 'src/boot/initEvents';
-import { formatDate } from 'src/composables/functions/formatDate';
-import type { CustomTableColumn } from 'src/components/molecules/MoleculeTable.vue';
+import { MoleculeDialog, Table } from 'src/components/molecules';
 import { Button, Input, Select } from 'src/components/atoms';
+import { initEvents } from 'src/boot/initEvents';
+import { deleteEvent, getEvents, updateEvent, addEvent } from 'src/services/eventsStorage';
+import { formatDate } from 'src/composables/functions/formatDate';
+import type { EventItem, EventCategory, EventStatus } from 'src/models/event';
+import type { CustomTableColumn } from 'src/components/molecules/MoleculeTable.vue';
 
-const tableData = ref<EventItem[]>([]);
-const tablePropsData = computed(() => ({
-  users: tableData.value,
-  totalCount: tableData.value.length,
+// types
+type SelectOption = { label: string; value: string };
+
+// static data
+const categories: EventCategory[] = ['Conference', 'Meeting', 'Workshop'];
+const statuses: EventStatus[] = ['Planned', 'Completed'];
+
+const categoryOptions: SelectOption[] = categories.map((category) => ({
+  label: category,
+  value: category,
 }));
 
+const statusOptions: SelectOption[] = statuses.map((status) => ({
+  label: status,
+  value: status,
+}));
+
+// state
+const tableData = ref<EventItem[]>([]);
+const searchQuery = ref('');
+const filterCategory = ref<string | null>(null);
+const filterStatus = ref<string | null>(null);
+
+const isDialogOpen = ref(false);
+const editedEvent = ref<EventItem | null>(null);
+const editedDescription = ref('');
+const validationError = ref<string | null>(null);
+
+const isDeleteConfirmOpen = ref(false);
+const eventToDelete = ref<EventItem | null>(null);
+
+// lifecycle
 onMounted(() => {
   initEvents();
   tableData.value = getEvents();
 });
 
-// Категории и статусы
-const categories: EventCategory[] = ['Conference', 'Meeting', 'Workshop'];
-const statuses: EventStatus[] = ['Planned', 'Completed'];
+// computed
+const filteredData = computed(() => {
+  const search = searchQuery.value.trim().toLowerCase();
+  const filterCat = filterCategory.value?.toLowerCase() ?? null;
+  const filterStat = filterStatus.value?.toLowerCase() ?? null;
 
-const categoriesOptions = categories.map((c) => ({ label: c, value: c }));
-const statusesOptions = statuses.map((s) => ({ label: s, value: s }));
+  return tableData.value.filter((event) => {
+    const title = (event.title ?? '').toLowerCase();
+    const category = (event.category ?? '').toLowerCase();
+    const status = (event.status ?? '').toLowerCase();
 
-// Столбцы таблицы
+    const matchesSearch = !search || title.includes(search);
+    const matchesCategory = filterCat == null || category === filterCat;
+    const matchesStatus = filterStat == null || status === filterStat;
+
+    return matchesSearch && matchesCategory && matchesStatus;
+  });
+});
+
+const tablePropsData = computed(() => ({
+  users: filteredData.value,
+  totalCount: filteredData.value.length,
+}));
+
 const columns: CustomTableColumn<EventItem>[] = [
   { name: 'id', label: 'ID', align: 'left', field: 'id' },
   { name: 'title', label: 'Title', align: 'left', field: 'title', sortable: true },
@@ -34,57 +76,44 @@ const columns: CustomTableColumn<EventItem>[] = [
     name: 'category',
     label: 'Category',
     align: 'left',
-    field: (row: EventItem) => row.category,
+    field: (row) => row.category,
     sortable: true,
   },
   {
     name: 'date',
     label: 'Date',
     align: 'left',
-    field: (row: EventItem) => formatDate(row.date),
+    field: (row) => formatDate(row.date),
     sortable: true,
   },
   {
     name: 'status',
     label: 'Status',
     align: 'left',
-    field: (row: EventItem) => row.status,
+    field: (row) => row.status,
     sortable: true,
   },
   { name: 'actions', label: 'Actions', align: 'center', field: 'actions' },
 ];
 
-// Диалог редактирования / добавления
-const isDialogOpen = ref(false);
-const editedEvent = ref<EventItem | null>(null);
-const editedDescription = ref('');
-const isDeleteConfirmOpen = ref(false);
-const eventToDelete = ref<EventItem | null>(null);
-
-const validationError = ref<string | null>(null);
-
-// --- Функции ---
-function onUpdate(row: EventItem) {
+// methods
+function openEditDialog(row: EventItem) {
   editedEvent.value = { ...row };
   editedDescription.value = row.description ?? '';
   validationError.value = null;
   isDialogOpen.value = true;
 }
 
-function onAdd() {
-  // Определяем максимальный id в текущих событиях
-  const maxId = tableData.value.length ? Math.max(...tableData.value.map((e) => e.id)) : 0;
-
-  const defaultCategory = categories[0] ?? 'Conference';
-  const defaultStatus = statuses[0] ?? 'Planned';
+function openAddDialog() {
+  const maxId = tableData.value.length ? Math.max(...tableData.value.map((event) => event.id)) : 0;
 
   editedEvent.value = {
     id: maxId + 1,
     title: '',
     description: '',
-    date: new Date().toISOString().split('T')[0] as string,
-    category: defaultCategory,
-    status: defaultStatus,
+    date: new Date().toISOString().split('T')[0] || '',
+    category: categories[0] ?? 'Conference',
+    status: statuses[0] ?? 'Planned',
   };
 
   editedDescription.value = '';
@@ -92,7 +121,7 @@ function onAdd() {
   isDialogOpen.value = true;
 }
 
-function saveEdit() {
+function saveEvent() {
   if (!editedEvent.value) return;
 
   if (!editedEvent.value.title.trim()) {
@@ -101,23 +130,25 @@ function saveEdit() {
   }
 
   const selectedDate = new Date(editedEvent.value.date);
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  if (selectedDate < now) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  if (selectedDate < today) {
     validationError.value = 'Date cannot be in the past';
     return;
   }
 
-  const updated: EventItem = {
+  const updatedEvent: EventItem = {
     ...editedEvent.value,
     description: editedDescription.value,
   };
 
-  const exists = tableData.value.find((e) => e.id === updated.id);
+  const exists = tableData.value.some((event) => event.id === updatedEvent.id);
+
   if (exists) {
-    updateEvent(updated);
+    updateEvent(updatedEvent);
   } else {
-    addEvent(updated);
+    addEvent(updatedEvent);
   }
 
   tableData.value = getEvents();
@@ -125,13 +156,14 @@ function saveEdit() {
   validationError.value = null;
 }
 
-function confirmDelete(row: EventItem) {
+function openDeleteDialog(row: EventItem) {
   eventToDelete.value = row;
   isDeleteConfirmOpen.value = true;
 }
 
-function deleteConfirmed() {
+function deleteEventConfirmed() {
   if (!eventToDelete.value) return;
+
   deleteEvent(eventToDelete.value.id);
   tableData.value = getEvents();
   isDeleteConfirmOpen.value = false;
@@ -139,51 +171,154 @@ function deleteConfirmed() {
 </script>
 
 <template>
-  <div>
-    <div class="mb-4">
-      <Button :label="'Add Event'" color="primary" @click="onAdd" />
+  <div class="min-h-screen bg-slate-50 px-4 py-6 lg:px-8">
+    <!-- Page header -->
+    <header class="mb-6 flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-semibold text-slate-900">Events</h1>
+        <p class="mt-1 text-sm text-slate-500">Manage and track your upcoming events.</p>
+      </div>
+
+      <!-- КНОПКА ВСЕГДА ВИДИМА -->
+      <Button label="Add Event" color="primary" class="shrink-0" @click="openAddDialog" />
+    </header>
+
+    <!-- Filter + table card -->
+    <div class="space-y-4">
+      <!-- Filter panel -->
+      <section
+        class="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 md:flex-row md:items-end md:justify-between"
+      >
+        <div class="grid w-full gap-3 md:grid-cols-3 lg:grid-cols-4">
+          <Input
+            v-model="searchQuery"
+            label="Search"
+            placeholder="Search by title..."
+            class="w-full"
+          />
+
+          <Select
+            v-model="filterCategory"
+            :options="categoryOptions"
+            label="Category"
+            clearable
+            class="w-full"
+          />
+
+          <Select
+            v-model="filterStatus"
+            :options="statusOptions"
+            label="Status"
+            clearable
+            class="w-full"
+          />
+        </div>
+
+        <!-- Reset button only -->
+        <div class="flex w-full justify-end md:w-auto">
+          <Button
+            label="Reset"
+            flat
+            class="w-full md:w-auto"
+            @click="
+              () => {
+                searchQuery = '';
+                filterCategory = null;
+                filterStatus = null;
+              }
+            "
+          />
+        </div>
+      </section>
+
+      <!-- Table card -->
+      <section class="overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+        <div class="border-b border-slate-100 px-4 py-3 text-sm text-slate-500">
+          {{ tablePropsData.totalCount }} events found
+        </div>
+
+        <div class="p-2 md:p-4">
+          <Table
+            :data="tablePropsData"
+            :columns="columns"
+            :actions="['update', 'delete']"
+            @update="openEditDialog"
+            @delete="openDeleteDialog"
+          />
+        </div>
+      </section>
     </div>
 
-    <Table
-      :data="tablePropsData"
-      :columns="columns"
-      :actions="['update', 'delete']"
-      @update="onUpdate"
-      @delete="confirmDelete"
-    />
-
-    <!-- Диалог добавления/редактирования -->
-    <MoleculeDialog v-model="isDialogOpen" style="min-width: 350px">
+    <!-- остальной код диалогов без изменений -->
+    <!-- Add / edit dialog -->
+    <MoleculeDialog v-model="isDialogOpen" class="!max-w-lg">
       <template #content>
-        <div v-if="editedEvent">
-          <div class="text-center text-bold text-2xl mb-4">
-            {{ editedEvent.id ? 'Edit Event' : 'Add Event' }}
+        <div v-if="editedEvent" class="space-y-4">
+          <div class="mb-2 text-center">
+            <h2 class="text-xl font-semibold text-slate-900">
+              {{ editedEvent.id ? 'Edit Event' : 'Add Event' }}
+            </h2>
+            <p class="mt-1 text-sm text-slate-500">
+              Fill in the details below to manage your event.
+            </p>
           </div>
 
-          <Input v-model="editedEvent.title" label="Title" hint="Enter the event title" />
-          <Input v-model="editedDescription" label="Description" hint="Optional description" />
-          <Input v-model="editedEvent.date" label="Date" hint="Format: YYYY-MM-DD" type="date" />
-          <Select v-model="editedEvent.category" :options="categoriesOptions" label="Category" />
-          <Select v-model="editedEvent.status" :options="statusesOptions" label="Status" />
+          <div class="space-y-3">
+            <Input v-model="editedEvent.title" label="Title" hint="Enter the event title" />
 
-          <div v-if="validationError" class="text-red-500 mt-2">{{ validationError }}</div>
+            <Input v-model="editedDescription" label="Description" hint="Optional description" />
+
+            <div class="grid gap-3 md:grid-cols-2">
+              <Input
+                v-model="editedEvent.date"
+                label="Date"
+                hint="Format: YYYY-MM-DD"
+                type="date"
+              />
+
+              <Select v-model="editedEvent.category" :options="categoryOptions" label="Category" />
+            </div>
+
+            <Select v-model="editedEvent.status" :options="statusOptions" label="Status" />
+
+            <div v-if="validationError" class="mt-1 text-sm text-red-500">
+              {{ validationError }}
+            </div>
+          </div>
         </div>
       </template>
 
       <template #actions>
-        <Button :label="'Save'" color="primary" @click="saveEdit" />
-        <Button :label="'Close'" flat @click="isDialogOpen = false" />
+        <div class="flex w-full items-center justify-end gap-2 border-t border-slate-100 pt-3">
+          <Button label="Cancel" flat class="min-w-[96px]" @click="isDialogOpen = false" />
+          <Button label="Save" color="primary" class="min-w-[96px]" @click="saveEvent" />
+        </div>
       </template>
     </MoleculeDialog>
 
-    <!-- Диалог подтверждения удаления -->
-    <MoleculeDialog v-model="isDeleteConfirmOpen" style="min-width: 300px">
+    <!-- Delete confirmation dialog -->
+    <MoleculeDialog v-model="isDeleteConfirmOpen" class="!max-w-sm">
       <template #content>
-        <div>Are you sure you want to delete the event "{{ eventToDelete?.title }}"?</div>
+        <div class="space-y-2">
+          <h2 class="text-lg font-semibold text-slate-900">Delete event</h2>
+          <p class="text-sm text-slate-500">
+            Are you sure you want to delete
+            <span class="font-medium text-slate-800"> "{{ eventToDelete?.title }}" </span>
+            ? This action cannot be undone.
+          </p>
+        </div>
       </template>
+
       <template #actions>
-        <Button :label="'Yes'" color="negative" @click="deleteConfirmed" />
-        <Button :label="'No'" flat @click="isDeleteConfirmOpen = false" />
+        <div class="flex w-full items-center justify-end gap-2 border-t border-slate-100 pt-3">
+          <Button label="Cancel" flat class="min-w-[88px]" @click="isDeleteConfirmOpen = false" />
+          <Button
+            label="Delete"
+            color="negative"
+            class="min-w-[88px]"
+            @click="deleteEventConfirmed"
+          />
+        </div>
       </template>
     </MoleculeDialog>
   </div>
