@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title> Event Manager </q-toolbar-title>
 
         <div>Quasar v{{ $q.version }}</div>
       </q-toolbar>
@@ -31,9 +31,9 @@ import EssentialLink, { type EssentialLinkProps } from 'components/EssentialLink
 const linksList: EssentialLinkProps[] = [
   {
     title: 'Github',
-    caption: 'github.com/quasarframework',
+    caption: 'Event Manager Source Code',
     icon: 'code',
-    link: 'https://github.com/quasarframework',
+    link: 'https://github.com/Weegoos/event-manager/tree/local-dev',
   },
   {
     title: 'Docs',

@@ -5,9 +5,10 @@ export interface EventItem {
   id: number;
   title: string;
   description?: string;
-  date: string; // ISO
+  date: string;
   category: EventCategory;
   status: EventStatus;
+  [key: string]: unknown;
 }
 
 export interface EventsStorage {

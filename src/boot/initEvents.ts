@@ -7,7 +7,7 @@ export function initEvents(): void {
   const initialEvents: EventItem[] = [
     {
       id: 1,
-      title: 'Tech Conference 2025',
+      title: 'Astana Hub 2025',
       description: 'Annual tech conference on AI and ML',
       date: '2025-05-15T10:00:00Z',
       category: 'Conference',
@@ -20,6 +20,14 @@ export function initEvents(): void {
       date: '2025-04-30T14:00:00Z',
       category: 'Meeting',
       status: 'Completed',
+    },
+    {
+      id: 3,
+      title: 'ZPlan Meeting',
+      description: 'GLM Coding-plan discussion',
+      date: '2025-07-15T10:00:00Z',
+      category: 'Conference',
+      status: 'Planned',
     },
   ];
 
