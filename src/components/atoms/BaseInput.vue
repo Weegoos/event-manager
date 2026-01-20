@@ -11,7 +11,6 @@
         class="w-full bg-slate-50 text-slate-800 text-sm border border-slate-200 rounded-lg pl-3 pr-10 py-2 shadow-sm transition hover:border-slate-300 hover:bg-slate-100 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 focus:ring-offset-0 peer"
       />
 
-      <!-- иконка clear -->
       <button
         v-if="localValue"
         type="button"
@@ -34,12 +33,10 @@
       </button>
     </div>
 
-    <!-- hint -->
     <p v-if="props.hint" class="text-xs text-slate-500 mt-1">
       {{ props.hint }}
     </p>
 
-    <!-- counter -->
     <div class="text-xs text-slate-500">{{ localValue.length }}/∞</div>
   </div>
 </template>

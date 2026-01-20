@@ -8,7 +8,6 @@
     row-key="id"
     v-if="props.data?.users?.length"
   >
-    <!-- Body Cells -->
     <template v-for="col in props.columns" :key="col.name" v-slot:[`body-cell-${col.name}`]="scope">
       <q-td :props="scope">
         <div
@@ -22,7 +21,6 @@
       </q-td>
     </template>
 
-    <!-- Actions Slot -->
     <template v-if="props.actions?.length" v-slot:body-cell-actions="scope">
       <q-td align="center">
         <q-btn-dropdown @click.stop color="primary">
@@ -63,9 +61,6 @@ import type { QTableColumn } from 'quasar';
 import { Button } from '../atoms';
 import type { EventItem } from 'src/models/event';
 
-/* =====================
-   Types
-===================== */
 export interface CustomTableColumn<T extends Record<string, unknown>> extends Omit<
   QTableColumn<T>,
   'field'
@@ -77,9 +72,6 @@ export interface CustomTableColumn<T extends Record<string, unknown>> extends Om
   field: Extract<keyof T, string> | ((row: T) => string | number | boolean | undefined);
 }
 
-/* =====================
-   Props
-===================== */
 const props = defineProps<{
   data: { users: EventItem[]; totalCount: number };
   columns: CustomTableColumn<EventItem>[];
@@ -87,9 +79,6 @@ const props = defineProps<{
   actions?: Array<'update' | 'delete'>;
 }>();
 
-/* =====================
-   Emits
-===================== */
 const emit = defineEmits<{
   (e: 'update', row: EventItem): void;
   (e: 'delete', row: EventItem): void;
@@ -97,9 +86,6 @@ const emit = defineEmits<{
   (e: 'rows-per-page-change', rowsPerPage: number): void;
 }>();
 
-/* =====================
-   Watch
-===================== */
 watch(
   () => props.data,
   (newData) => {
@@ -107,14 +93,11 @@ watch(
   },
 );
 
-/* =====================
-   Helpers
-===================== */
 function getCellValue(row: EventItem, col: CustomTableColumn<EventItem>) {
   if (typeof col.field === 'function') {
-    return col.field(row); // вызываем функцию, если field это функция
+    return col.field(row);
   } else {
-    return row[col.field]; // если field это ключ объекта
+    return row[col.field];
   }
 }
 </script>
