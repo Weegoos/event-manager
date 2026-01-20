@@ -172,20 +172,16 @@ function deleteEventConfirmed() {
 
 <template>
   <div class="min-h-screen bg-slate-50 px-4 py-6 lg:px-8">
-    <!-- Page header -->
     <header class="mb-6 flex items-center justify-between">
       <div>
         <h1 class="text-2xl font-semibold text-slate-900">Events</h1>
         <p class="mt-1 text-sm text-slate-500">Manage and track your upcoming events.</p>
       </div>
 
-      <!-- КНОПКА ВСЕГДА ВИДИМА -->
       <Button label="Add Event" color="primary" class="shrink-0" @click="openAddDialog" />
     </header>
 
-    <!-- Filter + table card -->
     <div class="space-y-4">
-      <!-- Filter panel -->
       <section
         class="flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200 md:flex-row md:items-end md:justify-between"
       >
@@ -214,7 +210,6 @@ function deleteEventConfirmed() {
           />
         </div>
 
-        <!-- Reset button only -->
         <div class="flex w-full justify-end md:w-auto">
           <Button
             label="Reset"
@@ -249,7 +244,6 @@ function deleteEventConfirmed() {
       </section>
     </div>
 
-    <!-- остальной код диалогов без изменений -->
     <!-- Add / edit dialog -->
     <MoleculeDialog v-model="isDialogOpen" class="!max-w-lg">
       <template #content>
@@ -290,8 +284,8 @@ function deleteEventConfirmed() {
 
       <template #actions>
         <div class="flex w-full items-center justify-end gap-2 border-t border-slate-100 pt-3">
-          <Button label="Cancel" flat class="min-w-[96px]" @click="isDialogOpen = false" />
-          <Button label="Save" color="primary" class="min-w-[96px]" @click="saveEvent" />
+          <Button label="Cancel" flat @click="isDialogOpen = false" />
+          <Button label="Save" color="primary" @click="saveEvent" />
         </div>
       </template>
     </MoleculeDialog>
@@ -311,11 +305,11 @@ function deleteEventConfirmed() {
 
       <template #actions>
         <div class="flex w-full items-center justify-end gap-2 border-t border-slate-100 pt-3">
-          <Button label="Cancel" flat class="min-w-[88px]" @click="isDeleteConfirmOpen = false" />
+          <Button label="Cancel" flat @click="isDeleteConfirmOpen = false" />
           <Button
             label="Delete"
+            class="!bg-rose-500 !hover:bg-rose-600 !text-white shadow-sm hover:shadow-md focus:ring-rose-500 border-0"
             color="negative"
-            class="min-w-[88px]"
             @click="deleteEventConfirmed"
           />
         </div>

@@ -8,7 +8,6 @@
     row-key="id"
     v-if="props.data?.users?.length"
   >
-    <!-- Body Cells -->
     <template v-for="col in props.columns" :key="col.name" v-slot:[`body-cell-${col.name}`]="scope">
       <q-td :props="scope">
         <div
@@ -22,7 +21,6 @@
       </q-td>
     </template>
 
-    <!-- Actions Slot -->
     <template v-if="props.actions?.length" v-slot:body-cell-actions="scope">
       <q-td align="center">
         <q-btn-dropdown @click.stop color="primary">
@@ -30,9 +28,10 @@
             <q-item clickable v-close-popup v-if="props.actions.includes('update')">
               <q-item-section>
                 <Button
-                  class="bg-blue-500 hover:bg-blue-600 text-white"
-                  icon="mdi-pencil"
+                  color="primary"
                   size="sm"
+                  label="Update"
+                  class="!shadow-sm hover:shadow-md focus:ring-blue-400/80 -mr-1"
                   @click="emit('update', scope.row)"
                 />
               </q-item-section>
@@ -41,9 +40,10 @@
             <q-item clickable v-close-popup>
               <q-item-section>
                 <Button
-                  class="bg-rose-500 hover:bg-rose-600 text-white"
-                  icon="mdi-delete"
+                  color="negative"
+                  label="Delete"
                   size="sm"
+                  class="!bg-rose-500 !hover:bg-rose-600 !text-white shadow-sm hover:shadow-md focus:ring-rose-500 border-0"
                   @click="emit('delete', scope.row)"
                 />
               </q-item-section>
@@ -61,9 +61,6 @@ import type { QTableColumn } from 'quasar';
 import { Button } from '../atoms';
 import type { EventItem } from 'src/models/event';
 
-/* =====================
-   Types
-===================== */
 export interface CustomTableColumn<T extends Record<string, unknown>> extends Omit<
   QTableColumn<T>,
   'field'
@@ -75,9 +72,6 @@ export interface CustomTableColumn<T extends Record<string, unknown>> extends Om
   field: Extract<keyof T, string> | ((row: T) => string | number | boolean | undefined);
 }
 
-/* =====================
-   Props
-===================== */
 const props = defineProps<{
   data: { users: EventItem[]; totalCount: number };
   columns: CustomTableColumn<EventItem>[];
@@ -85,9 +79,6 @@ const props = defineProps<{
   actions?: Array<'update' | 'delete'>;
 }>();
 
-/* =====================
-   Emits
-===================== */
 const emit = defineEmits<{
   (e: 'update', row: EventItem): void;
   (e: 'delete', row: EventItem): void;
@@ -95,9 +86,6 @@ const emit = defineEmits<{
   (e: 'rows-per-page-change', rowsPerPage: number): void;
 }>();
 
-/* =====================
-   Watch
-===================== */
 watch(
   () => props.data,
   (newData) => {
@@ -105,14 +93,11 @@ watch(
   },
 );
 
-/* =====================
-   Helpers
-===================== */
 function getCellValue(row: EventItem, col: CustomTableColumn<EventItem>) {
   if (typeof col.field === 'function') {
-    return col.field(row); // вызываем функцию, если field это функция
+    return col.field(row);
   } else {
-    return row[col.field]; // если field это ключ объекта
+    return row[col.field];
   }
 }
 </script>
