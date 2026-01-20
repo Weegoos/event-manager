@@ -30,9 +30,10 @@
             <q-item clickable v-close-popup v-if="props.actions.includes('update')">
               <q-item-section>
                 <Button
-                  class="bg-blue-500 hover:bg-blue-600 text-white"
-                  icon="mdi-pencil"
+                  color="primary"
                   size="sm"
+                  label="Update"
+                  class="!shadow-sm hover:shadow-md focus:ring-blue-400/80 -mr-1"
                   @click="emit('update', scope.row)"
                 />
               </q-item-section>
@@ -41,9 +42,10 @@
             <q-item clickable v-close-popup>
               <q-item-section>
                 <Button
-                  class="bg-rose-500 hover:bg-rose-600 text-white"
-                  icon="mdi-delete"
+                  color="negative"
+                  label="Delete"
                   size="sm"
+                  class="!bg-rose-500 !hover:bg-rose-600 !text-white shadow-sm hover:shadow-md focus:ring-rose-500 border-0"
                   @click="emit('delete', scope.row)"
                 />
               </q-item-section>

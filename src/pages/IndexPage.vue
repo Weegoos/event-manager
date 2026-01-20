@@ -290,8 +290,8 @@ function deleteEventConfirmed() {
 
       <template #actions>
         <div class="flex w-full items-center justify-end gap-2 border-t border-slate-100 pt-3">
-          <Button label="Cancel" flat class="min-w-[96px]" @click="isDialogOpen = false" />
-          <Button label="Save" color="primary" class="min-w-[96px]" @click="saveEvent" />
+          <Button label="Cancel" flat @click="isDialogOpen = false" />
+          <Button label="Save" color="primary" @click="saveEvent" />
         </div>
       </template>
     </MoleculeDialog>
@@ -311,11 +311,11 @@ function deleteEventConfirmed() {
 
       <template #actions>
         <div class="flex w-full items-center justify-end gap-2 border-t border-slate-100 pt-3">
-          <Button label="Cancel" flat class="min-w-[88px]" @click="isDeleteConfirmOpen = false" />
+          <Button label="Cancel" flat @click="isDeleteConfirmOpen = false" />
           <Button
             label="Delete"
+            class="!bg-rose-500 !hover:bg-rose-600 !text-white shadow-sm hover:shadow-md focus:ring-rose-500 border-0"
             color="negative"
-            class="min-w-[88px]"
             @click="deleteEventConfirmed"
           />
         </div>
